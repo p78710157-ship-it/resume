@@ -1,4 +1,9 @@
-<!DOCTYPE html>
+import os
+
+# Save profile image as profile.jpg in working directory or encode to base64 for standalone HTML, but user asked for index.html to use on GitHub Pages.
+# We will provide a clean index.html file that references profile image (e.g. profile.jpg) and also embed base64 fallback or handle it cleanly.
+
+html_content = """<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -15,13 +20,13 @@
             --primary-pastel: #B39DDB;
             --primary-dark: #7E57C2;
             --primary-light: #EDE7F6;
-            --accent-pink: #F48FB1;
-            --accent-soft: #D1C4E9;
-            --text-dark: #2C2C3E;
-            --text-muted: #666680;
-            --bg-light: #FAF8FC;
-            --white: #FFFFFF;
-            --card-shadow: 0 10px 30px rgba(126, 87, 194, 0.08);
+            --accent: #D1C4E9;
+            --bg-color: #F8F6FC;
+            --card-bg: #FFFFFF;
+            --text-main: #3C3352;
+            --text-muted: #6C6280;
+            --border-radius: 16px;
+            --shadow: 0 10px 30px rgba(126, 87, 194, 0.08);
             --transition: all 0.3s ease;
         }
 
@@ -32,57 +37,56 @@
             font-family: 'Noto Sans Thai', sans-serif;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             line-height: 1.6;
+            padding-bottom: 60px;
         }
 
-        /* Navigation */
-        nav {
-            position: fixed;
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             z-index: 1000;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-            padding: 1rem 0;
+            box-shadow: 0 2px 15px rgba(179, 157, 219, 0.15);
+            margin-bottom: 40px;
         }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2rem;
+            height: 70px;
         }
 
         .logo {
             font-size: 1.4rem;
             font-weight: 700;
             color: var(--primary-dark);
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 25px;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: var(--text-dark);
+            color: var(--text-main);
             font-weight: 500;
             transition: var(--transition);
         }
@@ -91,291 +95,218 @@
             color: var(--primary-dark);
         }
 
-        /* Hero Section */
+        /* Profile Hero Section */
         .hero {
-            padding: 9rem 2rem 5rem;
-            max-width: 1200px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F3E5F5 100%);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 40px;
+            border: 1px solid rgba(179, 157, 219, 0.2);
+        }
+
+        .profile-img-container {
+            flex: 0 0 250px;
+            height: 250px;
             margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 3rem;
-            min-height: 85vh;
+            position: relative;
         }
 
-        .hero-content {
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid var(--primary-light);
+            box-shadow: 0 8px 25px rgba(126, 87, 194, 0.2);
+        }
+
+        .hero-details {
             flex: 1;
+            min-width: 280px;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 6px 16px;
-            background-color: var(--primary-light);
+        .hero-details h1 {
+            font-size: 2.2rem;
             color: var(--primary-dark);
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 8px;
         }
 
-        .hero-title {
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.8rem;
-            line-height: 1.2;
-        }
-
-        .hero-subtitle {
-            font-size: 1.4rem;
-            color: var(--primary-dark);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-description {
+        .hero-details .subtitle {
+            font-size: 1.1rem;
             color: var(--text-muted);
-            font-size: 1.05rem;
-            margin-bottom: 2rem;
-            max-width: 540px;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
 
-        .hero-buttons {
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
             display: flex;
-            gap: 1rem;
             align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .info-item i {
+            color: var(--primary-dark);
+            width: 20px;
+            text-align: center;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 28px;
+            padding: 10px 20px;
             border-radius: 30px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
             transition: var(--transition);
-            border: none;
-            cursor: pointer;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-pastel), var(--primary-dark));
-            color: var(--white);
-            box-shadow: 0 4px 15px rgba(126, 87, 194, 0.3);
+        .btn-ig {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 39, 67, 0.3);
         }
 
-        .btn-primary:hover {
+        .btn-ig:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(126, 87, 194, 0.4);
+            box-shadow: 0 6px 20px rgba(220, 39, 67, 0.4);
         }
 
-        .btn-outline {
-            border: 2px solid var(--primary-pastel);
-            color: var(--primary-dark);
-            background: transparent;
+        .btn-email {
+            background-color: var(--primary-pastel);
+            color: white;
         }
 
-        .btn-outline:hover {
-            background-color: var(--primary-light);
+        .btn-email:hover {
+            background-color: var(--primary-dark);
             transform: translateY(-2px);
-        }
-
-        .hero-avatar {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            position: relative;
-        }
-
-        .avatar-card {
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-light), var(--accent-soft));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            border: 8px solid var(--white);
-        }
-
-        .avatar-card i {
-            font-size: 8rem;
-            color: var(--primary-dark);
-            opacity: 0.8;
         }
 
         /* Section Layout */
-        section {
-            padding: 5rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 3.5rem;
-        }
-
         .section-title {
-            font-size: 2.2rem;
-            color: var(--text-dark);
+            font-size: 1.6rem;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             position: relative;
-            display: inline-block;
-            margin-bottom: 0.5rem;
         }
 
         .section-title::after {
             content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 4px;
-            background: var(--primary-pastel);
-            border-radius: 2px;
-        }
-
-        .section-subtitle {
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-
-        /* Personal Info Cards Grid */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .info-card {
-            background: var(--white);
-            padding: 1.8rem;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(179, 157, 219, 0.2);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-pastel);
-        }
-
-        .info-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            flex: 1;
+            height: 2px;
             background: var(--primary-light);
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
+            margin-left: 10px;
         }
 
-        .info-text h4 {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 0.2rem;
+        .section {
+            margin-bottom: 40px;
         }
 
-        .info-text p {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-dark);
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(179, 157, 219, 0.15);
+            margin-bottom: 25px;
         }
 
         /* Timeline / Education */
-        .education-timeline {
+        .timeline {
             position: relative;
-            max-width: 800px;
-            margin: 0 auto;
-            padding-left: 2rem;
-            border-left: 3px solid var(--primary-light);
+            padding-left: 30px;
         }
 
-        .edu-item {
-            position: relative;
-            margin-bottom: 2.5rem;
-            background: var(--white);
-            padding: 1.8rem;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(179, 157, 219, 0.2);
-        }
-
-        .edu-item::before {
+        .timeline::before {
             content: '';
             position: absolute;
-            left: -2.6rem;
-            top: 1.8rem;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--primary-dark);
-            border: 4px solid var(--white);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .edu-year {
-            display: inline-block;
-            padding: 4px 12px;
+            left: 10px;
+            top: 5px;
+            bottom: 5px;
+            width: 3px;
             background-color: var(--primary-light);
-            color: var(--primary-dark);
-            border-radius: 12px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -26px;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: var(--primary-dark);
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 0 0 2px var(--primary-pastel);
+        }
+
+        .timeline-date {
             font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-        }
-
-        .edu-degree {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.4rem;
-        }
-
-        .edu-school {
             color: var(--primary-dark);
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            background-color: var(--primary-light);
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-bottom: 6px;
         }
 
-        .edu-desc {
-            color: var(--text-muted);
+        .timeline-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .timeline-sub {
             font-size: 0.95rem;
+            color: var(--text-muted);
         }
 
-        /* Skills Section */
+        /* Skills Grid */
         .skills-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
         }
 
-        .skill-box {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(179, 157, 219, 0.2);
-        }
-
-        .skill-box h3 {
-            font-size: 1.3rem;
+        .skill-group h3 {
+            font-size: 1.2rem;
             color: var(--primary-dark);
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .skill-list {
@@ -384,465 +315,315 @@
 
         .skill-list li {
             position: relative;
-            padding-left: 1.8rem;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
+            padding-left: 20px;
+            margin-bottom: 10px;
             font-size: 0.95rem;
         }
 
         .skill-list li::before {
-            content: '✦';
+            content: '•';
+            color: var(--primary-dark);
+            font-size: 1.3rem;
             position: absolute;
             left: 0;
-            color: var(--primary-pastel);
-            font-size: 1.1rem;
+            top: -2px;
         }
 
-        .tools-tags {
+        .tools-badges {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px dashed var(--accent-soft);
+            margin-top: 15px;
         }
 
-        .tool-tag {
-            background: var(--primary-light);
+        .badge {
+            background-color: var(--primary-light);
             color: var(--primary-dark);
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        /* Portfolio / Experience Cards */
-        .portfolio-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .portfolio-card {
-            background: var(--white);
+            padding: 8px 16px;
             border-radius: 20px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(179, 157, 219, 0.2);
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .portfolio-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(126, 87, 194, 0.15);
-        }
-
-        .card-body {
-            padding: 1.8rem;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .card-tag {
-            align-self: flex-start;
-            padding: 4px 12px;
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.8rem;
-        }
-
-        .card-role {
-            font-size: 0.95rem;
-            color: var(--primary-dark);
-            font-weight: 600;
-            margin-bottom: 0.8rem;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .card-desc {
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.6;
-            margin-bottom: 1.2rem;
+        /* Activities & Works */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
 
-        /* Goals Banner */
-        .goals-banner {
-            background: linear-gradient(135deg, var(--primary-pastel), var(--primary-dark));
-            border-radius: 24px;
-            padding: 3rem 2rem;
-            color: var(--white);
-            text-align: center;
-            box-shadow: var(--card-shadow);
-        }
-
-        .goals-banner h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1.2rem;
-            font-weight: 700;
-        }
-
-        .goals-banner p {
-            max-width: 700px;
-            margin: 0 auto 1.5rem;
-            font-size: 1.05rem;
-            opacity: 0.95;
-            line-height: 1.8;
-        }
-
-        /* Contact Section & Footer */
-        .contact-section {
-            text-align: center;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .social-btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: var(--white);
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            text-decoration: none;
-            box-shadow: var(--card-shadow);
+        .activity-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(179, 157, 219, 0.15);
             transition: var(--transition);
-            border: 1px solid rgba(179, 157, 219, 0.3);
         }
 
-        .social-btn:hover {
-            background: var(--primary-dark);
-            color: var(--white);
-            transform: translateY(-4px);
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(126, 87, 194, 0.12);
         }
 
+        .activity-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .activity-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        /* Goals Section */
+        .goals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .goal-item {
+            background: linear-gradient(135deg, #FFFFFF 0%, #EDE7F6 100%);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px solid rgba(179, 157, 219, 0.2);
+            box-shadow: var(--shadow);
+        }
+
+        .goal-item i {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .goal-item p {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* Footer */
         footer {
             text-align: center;
-            padding: 2rem;
-            background: var(--white);
+            padding: 30px 0;
             color: var(--text-muted);
             font-size: 0.9rem;
             border-top: 1px solid rgba(179, 157, 219, 0.2);
+            margin-top: 40px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 992px) {
+        /* Responsive Styles */
+        @media (max-width: 768px) {
             .hero {
                 flex-direction: column;
                 text-align: center;
-                padding-top: 7rem;
+                padding: 30px 20px;
             }
 
-            .hero-description {
-                margin: 0 auto 2rem;
+            .info-grid {
+                justify-content: center;
+                text-align: left;
             }
 
-            .hero-buttons {
+            .social-buttons {
                 justify-content: center;
             }
-        }
 
-        @media (max-width: 768px) {
             .nav-links {
-                display: none;
-            }
-
-            .hero-title {
-                font-size: 2.2rem;
-            }
-
-            .avatar-card {
-                width: 240px;
-                height: 240px;
-            }
-
-            .avatar-card i {
-                font-size: 6rem;
-            }
-
-            .section-title {
-                font-size: 1.8rem;
+                display: none; /* Can be enhanced with hamburger menu if requested, keeping clean and responsive */
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <a href="#" class="logo">
+    <header>
+        <nav class="container">
+            <div class="logo">
                 <i class="fa-solid fa-clapperboard"></i> Portfolio
-            </a>
+            </div>
             <ul class="nav-links">
                 <li><a href="#about">ประวัติส่วนตัว</a></li>
                 <li><a href="#education">การศึกษา</a></li>
-                <li><a href="#skills">ทักษะและความสามารถ</a></li>
-                <li><a href="#experience">ผลงานและกิจกรรม</a></li>
-                <li><a href="#contact">ติดต่อ</a></li>
+                <li><a href="#skills">ทักษะ</a></li>
+                <li><a href="#activities">ผลงาน/กิจกรรม</a></li>
+                <li><a href="#goals">เป้าหมาย</a></li>
             </ul>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero">
-        <div class="hero-content">
-            <span class="badge">Digital Media Technology</span>
-            <h1 class="hero-title">สุพรรณษา พุ่มเพ็ชร</h1>
-            <h2 class="hero-subtitle">Assistant Director & Film Producer</h2>
-            <p class="hero-description">
-                นักศึกษาสาขาเทคโนโลยีดิจิทัลมีเดีย มีความหลงใหลและความตั้งใจในการกำกับ เขียนบท จัดการกองถ่าย และคุมเวลาการผลิตภาพยนตร์
-            </p>
-            <div class="hero-buttons">
-                <a href="https://www.instagram.com/suphansa_spb05" target="_blank" class="btn btn-primary">
-                    <i class="fa-brands fa-instagram"></i> Instagram
-                </a>
-                <a href="#contact" class="btn btn-outline">
-                    <i class="fa-regular fa-envelope"></i> ติดต่อ
-                </a>
-            </div>
-        </div>
-        <div class="hero-avatar">
-            <div class="avatar-card">
-                <i class="fa-solid fa-user-ninja"></i>
-            </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- Personal Info Section -->
-    <section id="about">
-        <div class="section-header">
-            <h2 class="section-title">ประวัติส่วนตัว</h2>
-            <p class="section-subtitle">Personal Details</p>
-        </div>
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-cake-candles"></i></div>
-                <div class="info-text">
-                    <h4>วันเกิด / อายุ</h4>
-                    <p>18 ก.ค. 2548 (21 ปี)</p>
-                </div>
+    <main class="container">
+        <!-- Hero / Personal Info Section -->
+        <section id="about" class="hero">
+            <div class="profile-img-container">
+                <img src="profile.jpg" alt="สุพรรณษา พุ่มเพ็ชร" class="profile-img" onerror="this.src='https://via.placeholder.com/250/B39DDB/ffffff?text=Suphansa'">
             </div>
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-star"></i></div>
-                <div class="info-text">
-                    <h4>ราศี</h4>
-                    <p>กรกฎ</p>
+            <div class="hero-details">
+                <h1>สุพรรณษา พุ่มเพ็ชร</h1>
+                <div class="subtitle">นักศึกษาสาขาเทคโนโลยีดิจิทัลมีเดีย | Assistant Director & Director</div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i class="fa-solid fa-cake-candles"></i>
+                        <span>18 กรกฎาคม 2548 (อายุ 21 ปี)</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-star"></i>
+                        <span>ราศี: กรกฎ | MBTI: ISFP</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>boombaraka789@gmail.com</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>082-701-2483</span>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2;">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>เพชรเกษม 106 แขวงหนองค้างพลู เขตหนองแขม กรุงเทพมหานคร</span>
+                    </div>
                 </div>
-            </div>
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-brain"></i></div>
-                <div class="info-text">
-                    <h4>MBTI</h4>
-                    <p>ISFP</p>
-                </div>
-            </div>
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
-                <div class="info-text">
-                    <h4>ที่อยู่</h4>
-                    <p style="font-size: 0.95rem;">หนองแขม กรุงเทพฯ</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Education Section -->
-    <section id="education">
-        <div class="section-header">
-            <h2 class="section-title">ประวัติการศึกษา</h2>
-            <p class="section-subtitle">Education Background</p>
-        </div>
-        <div class="education-timeline">
-            <div class="edu-item">
-                <span class="edu-year">พ.ศ. 2566 - พ.ศ. 2569 (ปัจจุบัน)</span>
-                <h3 class="edu-degree">ระดับปริญญาตรี (วิทยาศาสตรบัณฑิต)</h3>
-                <div class="edu-school">มหาวิทยาลัยธนบุรี (กรุงเทพมหานคร)</div>
-                <p class="edu-desc">สาขาเทคโนโลยีดิจิทัลมีเดีย</p>
-            </div>
-            <div class="edu-item">
-                <span class="edu-year">พ.ศ. 2563 - พ.ศ. 2565</span>
-                <h3 class="edu-degree">ระดับ ปวช.</h3>
-                <div class="edu-school">วิทยาลัยเทคโนโลยีกรุงเทพธน (กรุงเทพมหานคร)</div>
-                <p class="edu-desc">แผนกพาณิชยการ สาขาคอมพิวเตอร์ธุรกิจ</p>
-            </div>
-            <div class="edu-item">
-                <span class="edu-year">พ.ศ. 2560 - พ.ศ. 2562</span>
-                <h3 class="edu-degree">ระดับมัธยมต้น</h3>
-                <div class="edu-school">โรงเรียนมนต์จรัสสิงห์อนุสรณ์ (กรุงเทพมหานคร)</div>
-                <p class="edu-desc">แผนการเรียนทั่วไป</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Skills Section -->
-    <section id="skills">
-        <div class="section-header">
-            <h2 class="section-title">ทักษะและความสามารถ</h2>
-            <p class="section-subtitle">Skills & Abilities</p>
-        </div>
-        <div class="skills-grid">
-            <div class="skill-box">
-                <h3><i class="fa-solid fa-film"></i> Hard Skills</h3>
-                <ul class="skill-list">
-                    <li>มีทักษะการกำกับและเขียนบท</li>
-                    <li>มีทักษะการทำ Storyboard เบื้องต้น</li>
-                    <li>มีความรู้พื้นฐานด้านภาพยนตร์และการถ่ายทำ (มุมกล้อง, การจัดฉาก)</li>
-                    <li>การจัดการหาโลเคชั่นและประสานงานกับเจ้าของสถานที่</li>
-                </ul>
-                <div class="tools-tags">
-                    <span class="tool-tag">Illustrator (Ai)</span>
-                    <span class="tool-tag">Premiere Pro (Pr)</span>
-                    <span class="tool-tag">Photoshop (Ps)</span>
-                    <span class="tool-tag">Canva</span>
+                <div class="social-buttons">
+                    <a href="https://www.instagram.com/suphansa_spb05" target="_blank" class="btn btn-ig">
+                        <i class="fa-brands fa-instagram"></i> suphansa_spb05
+                    </a>
+                    <a href="mailto:boombaraka789@gmail.com" class="btn btn-email">
+                        <i class="fa-solid fa-envelope"></i> ส่งอีเมล
+                    </a>
                 </div>
             </div>
+        </section>
 
-            <div class="skill-box">
-                <h3><i class="fa-solid fa-users"></i> Soft Skills</h3>
-                <ul class="skill-list">
-                    <li><strong>การสื่อสาร:</strong> สามารถอธิบายงานและประสานงานกับทีมงานหลายฝ่ายได้อย่างมีประสิทธิภาพ</li>
-                    <li><strong>การทำงานเป็นทีม:</strong> สามารถปรับตัวเข้าหาผู้อื่นได้ และพร้อมสนับสนุนทีม</li>
-                    <li><strong>การรับฟังผู้อื่น:</strong> รับฟังความคิดเห็นและข้อเสนอแนะจากทีมงาน</li>
-                    <li><strong>การปรับตัวและการเรียนรู้:</strong> พร้อมเปลี่ยนแปลงและพัฒนาตัวเองอยู่เสมอ</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience & Projects Section -->
-    <section id="experience">
-        <div class="section-header">
-            <h2 class="section-title">ผลงานและกิจกรรม</h2>
-            <p class="section-subtitle">Projects & Activities</p>
-        </div>
-        <div class="portfolio-grid">
-            <div class="portfolio-card">
-                <div class="card-body">
-                    <span class="card-tag">Music Video</span>
-                    <h3 class="card-title">ถ่าย MV เพลง "อันเฟรนด์ (Unfriend)"</h3>
-                    <div class="card-role"><i class="fa-solid fa-user-gear"></i> ผู้ช่วยผู้กำกับ</div>
-                    <p class="card-desc">
-                        วางแผนการถ่ายทำ ควบคุมเวลาในกองถ่าย ประสานงาน เรียงคิว จัดลำดับการถ่ายทำ และช่วยสื่อสารคำสั่งของผู้กำกับไปยังทีมงาน
-                    </p>
+        <!-- Education Section -->
+        <section id="education" class="section">
+            <h2 class="section-title"><i class="fa-solid fa-graduation-cap"></i> ประวัติการศึกษา</h2>
+            <div class="card">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-date">พ.ศ. 2566 - พ.ศ. 2569 (ปัจจุบัน)</span>
+                        <h3 class="timeline-title">ระดับปริญญาตรี - มหาวิทยาลัยธนบุรี</h3>
+                        <p class="timeline-sub">หลักสูตรวิทยาศาสตรบัณฑิต สาขาเทคโนโลยีดิจิทัลมีเดีย</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-date">พ.ศ. 2563 - พ.ศ. 2565</span>
+                        <h3 class="timeline-title">ระดับ ปวช. - วิทยาลัยเทคโนโลยีกรุงธน</h3>
+                        <p class="timeline-sub">แผนกพาณิชยการ สาขาคอมพิวเตอร์ธุรกิจ</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-date">พ.ศ. 2560 - พ.ศ. 2562</span>
+                        <h3 class="timeline-title">ระดับมัธยมต้น - โรงเรียนมนต์จรัสสิงห์อนุสรณ์</h3>
+                        <p class="timeline-sub">แผนการเรียนทั่วไป</p>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="portfolio-card">
-                <div class="card-body">
-                    <span class="card-tag">Documentary</span>
-                    <h3 class="card-title">สารคดี "ตะลุยถิ่น อนินปัญญา"</h3>
-                    <div class="card-role"><i class="fa-solid fa-clapperboard"></i> คนเขียนบท & โปรดิวเซอร์</div>
-                    <p class="card-desc">
-                        เขียนบทภาพยนตร์ ดูแลทุกอย่างในกองถ่าย จัดการเวลาอย่างมีประสิทธิภาพ มีความรับผิดชอบ และคอยแก้ไขปัญหาเฉพาะหน้าในกองถ่าย
-                    </p>
+        <!-- Skills Section -->
+        <section id="skills" class="section">
+            <h2 class="section-title"><i class="fa-solid fa-gears"></i> ทักษะความสามารถ</h2>
+            <div class="card">
+                <div class="skills-grid">
+                    <div class="skill-group">
+                        <h3><i class="fa-solid fa-film"></i> Hard Skills</h3>
+                        <ul class="skill-list">
+                            <li>มีทักษะการกำกับและเขียนบท</li>
+                            <li>มีทักษะการทำ Storyboard เบื้องต้น</li>
+                            <li>มีทักษะการจัดการหาโลเคชั่นและประสานงานกับเจ้าของสถานที่</li>
+                            <li>มีความรู้พื้นฐานด้านภาพยนตร์และการถ่ายทำ เช่น มุมกล้องและการจัดฉาก</li>
+                        </ul>
+                        <div style="margin-top: 15px; font-weight: 600; color: var(--text-main);">เครื่องมือที่ใช้ได้ขั้นพื้นฐาน:</div>
+                        <div class="tools-badges">
+                            <span class="badge"><i class="fa-solid fa-pen-nib"></i> Illustrator (Ai)</span>
+                            <span class="badge"><i class="fa-solid fa-video"></i> Premiere Pro (Pr)</span>
+                            <span class="badge"><i class="fa-solid fa-image"></i> Photoshop (Ps)</span>
+                            <span class="badge"><i class="fa-solid fa-palette"></i> Canva</span>
+                        </div>
+                    </div>
+                    <div class="skill-group">
+                        <h3><i class="fa-solid fa-users"></i> Soft Skills</h3>
+                        <ul class="skill-list">
+                            <li><strong>การสื่อสาร:</strong> สามารถอธิบายงานและประสานงานกับทีมงานหลายฝ่ายได้</li>
+                            <li><strong>การทำงานเป็นทีม:</strong> สามารถปรับตัวเข้าหาผู้อื่นได้ และพร้อมสนับสนุนทีม</li>
+                            <li><strong>การรับฟังผู้อื่น:</strong> รับฟังความคิดเห็นและข้อเสนอแนะจากทีม</li>
+                            <li><strong>การปรับตัวและการเรียนรู้:</strong> พร้อมเปลี่ยนแปลงและพัฒนาตัวเองเสมอ</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="portfolio-card">
-                <div class="card-body">
-                    <span class="card-tag">Short Film</span>
-                    <h3 class="card-title">หนังสั้น "สืบรัก(ไม่)ลับ"</h3>
-                    <div class="card-role"><i class="fa-solid fa-user-gear"></i> ผู้ช่วยผู้กำกับ</div>
-                    <p class="card-desc">
-                        จัดลำดับฉากที่จะถ่าย ควบคุมเวลาในกองถ่าย เรียงคิวถ่ายทำ และถ่ายทอดคำสั่งของผู้กำกับไปยังทีมงานทั้งหมด
-                    </p>
+        <!-- Activities Section -->
+        <section id="activities" class="section">
+            <h2 class="section-title"><i class="fa-solid fa-clapperboard"></i> กิจกรรมและผลงานที่เคยเข้าร่วม</h2>
+            <div class="activity-grid">
+                <div class="activity-card">
+                    <h3><i class="fa-solid fa-music"></i> ถ่าย MV เพลง "อันเฟรนด์ (Unfriend)"</h3>
+                    <p><strong>หน้าที่:</strong> ผู้ช่วยผู้กำกับ (Assistant Director)</p>
+                    <p>คอยวางแผนการถ่ายทำ ควบคุมเวลาในกองถ่าย ประสานงาน เรียงคิวและจัดลำดับการถ่าย ช่วยสื่อสารคำสั่งของผู้กำกับ</p>
+                </div>
+                <div class="activity-card">
+                    <h3><i class="fa-solid fa-tv"></i> ถ่ายสารคดี "ตะลุยถิ่น อนินปัญญา"</h3>
+                    <p><strong>หน้าที่:</strong> เขียนบท และ โปรดิวเซอร์ (Producer)</p>
+                    <p>คอยดูแลทุกอย่างในกอง จัดการเวลาให้ดี มีความรับผิดชอบ และคอยแก้ปัญหาเฉพาะหน้าในกองถ่าย</p>
+                </div>
+                <div class="activity-card">
+                    <h3><i class="fa-solid fa-video"></i> ถ่ายหนังสั้น "สืบรัก(ไม่)ลับ"</h3>
+                    <p><strong>หน้าที่:</strong> ผู้ช่วยผู้กำกับ (Assistant Director)</p>
+                    <p>ช่วยจัดลำดับฉากที่จะถ่าย ควบคุมเวลาในกองถ่าย เรียงคิว และถ่ายทอดคำสั่งผู้กำกับไปยังทีมงานทั้งหมด</p>
+                </div>
+                <div class="activity-card">
+                    <h3><i class="fa-solid fa-chalkboard-user"></i> ViewSonic ZERO TO HERO</h3>
+                    <p>เข้าร่วมอบรม 3 วันจาก BLACKMAGIC ได้รับหน้าที่เขียนบทและได้ลองออกกองปฏิบัติจริง</p>
+                </div>
+                <div class="activity-card">
+                    <h3><i class="fa-solid fa-user-group"></i> กิจกรรมรับน้องปี 2567</h3>
+                    <p>รับหน้าที่เป็นสตาฟคอยดูแลน้องๆ และพาน้องๆ ทำกิจกรรมต่างๆ ของมหาวิทยาลัย</p>
                 </div>
             </div>
+        </section>
 
-            <div class="portfolio-card">
-                <div class="card-body">
-                    <span class="card-tag">Training Course</span>
-                    <h3 class="card-title">ViewSonic ZERO TO HERO</h3>
-                    <div class="card-role"><i class="fa-solid fa-pen-nib"></i> ผู้เขียนบท & ออกกอง</div>
-                    <p class="card-desc">
-                        เข้าร่วมการอบรม 3 วันจาก BLACK MAGIC ได้รับหน้าที่เขียนบท และได้ลงมือปฏิบัติทดลองออกกองถ่ายจริง
-                    </p>
+        <!-- Goals Section -->
+        <section id="goals" class="section">
+            <h2 class="section-title"><i class="fa-solid fa-bullseye"></i> เป้าหมายและสิ่งที่อยากทำ</h2>
+            <div class="goals-container">
+                <div class="goal-item">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <p>อยากลองกำกับงานใหญ่ๆ</p>
+                </div>
+                <div class="goal-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <p>อยากพัฒนาทักษะของตัวเองขึ้นอีก</p>
+                </div>
+                <div class="goal-item">
+                    <i class="fa-solid fa-photo-film"></i>
+                    <p>อยากมีส่วนร่วมในการสร้างสรรค์สื่อต่างๆ</p>
                 </div>
             </div>
+        </section>
+    </main>
 
-            <div class="portfolio-card">
-                <div class="card-body">
-                    <span class="card-tag">Activity</span>
-                    <h3 class="card-title">กิจกรรมรับน้องปี 2567</h3>
-                    <div class="card-role"><i class="fa-solid fa-heart"></i> สตาฟดูแลน้องๆ</div>
-                    <p class="card-desc">
-                        รับหน้าที่เป็นสตาฟคอยดูแลน้องๆ นักศึกษาใหม่ และนำพาน้องๆ ร่วมทำกิจกรรมต่างๆ เพื่อสร้างความสัมพันธ์อันดี
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Goals Banner -->
-    <section>
-        <div class="goals-banner">
-            <h3><i class="fa-solid fa-bullseye"></i> เป้าหมายและสิ่งที่อยากทำ</h3>
-            <p>
-                "อยากลองกำกับงานใหญ่ๆ อยากพัฒนาทักษะของตัวเองให้ดียิ่งขึ้นไปอีก และอยากมีส่วนร่วมในการสร้างสรรค์สื่อต่างๆ ที่ส่งต่อแรงบันดาลใจ"
-            </p>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section">
-        <div class="section-header">
-            <h2 class="section-title">ช่องทางการติดต่อ</h2>
-            <p class="section-subtitle">Get In Touch</p>
-        </div>
-        <div class="info-grid" style="max-width: 800px; margin: 0 auto;">
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
-                <div class="info-text">
-                    <h4>Email</h4>
-                    <p style="font-size: 0.95rem;">boombaraka789@gmail.com</p>
-                </div>
-            </div>
-            <div class="info-card">
-                <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
-                <div class="info-text">
-                    <h4>Phone</h4>
-                    <p>082-701-2483</p>
-                </div>
-            </div>
-        </div>
-        <div class="social-links">
-            <a href="https://www.instagram.com/suphansa_spb05" target="_blank" class="social-btn" title="Instagram">
-                <i class="fa-brands fa-instagram"></i>
-            </a>
-            <a href="mailto:boombaraka789@gmail.com" class="social-btn" title="Email">
-                <i class="fa-solid fa-envelope"></i>
-            </a>
-        </div>
-    </section>
-
-    <!-- Footer -->
     <footer>
-        <p>&copy; Portfolio - สุพรรณษา พุ่มเพ็ชร. All Rights Reserved.</p>
+        <div class="container">
+            <p>&copy; 2026 สุพรรณษา พุ่มเพ็ชร - Portfolio Website</p>
+        </div>
     </footer>
 
 </body>
 </html>
+"""
+
+# Save index.html
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Generated index.html successfully.")
